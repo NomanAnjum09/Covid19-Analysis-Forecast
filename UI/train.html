@@ -14,63 +14,46 @@
 
 <body>
 	<script>
-		if (document.readyState == 'complete') {
-			start()
-		} else {
-			document.onreadystatechange = function () {
-				if (document.readyState === "complete") {
-					start()
-				}
-			}
-		}
-		function start() {
-			var home_id = document.getElementById("home")
-			home_id.classList.toggle('trans')
-		}
+
 		function httpGet() {
+			let file = document.getElementById('file').files[0]
+			var myHeaders = new Headers();
+			var formdata = new FormData();
+			formdata.append("myfile", file);
+
 			var requestOptions = {
-				method: "GET",
-				redirect: "follow",
+				method: 'POST',
+				headers: myHeaders,
+				body: formdata,
+				redirect: 'follow'
 			};
-
-			var home_id = document.getElementById("home")
-			var result_id = document.getElementById("result")
 			var spinner_id = document.getElementById("spinner")
-			var sentence_id = document.getElementById("sentence")
-
 			spinner_id.classList.toggle("inactive");
-			const query = sentence_id.value;
+			
+			var alert_id = document.getElementById("alert")
 
+			alert_id.className = "alert alert-info";
+			alert_id.innerText = "Model training started..."
 
-			let url = `http://127.0.0.1:8001/is_sarcastic/?sentence=${query}`;
-
-			fetch(url, requestOptions).then((response) => response.json())
-				.then((result) => {
-					sentence_id.value = ''
+			fetch("http://127.0.0.1:8001/train/", requestOptions)
+				.then(response => response.json())
+				.then(result => {
 					spinner_id.classList.toggle("inactive");
-					home_id.classList.toggle('inactive')
-					result_id.classList.toggle('inactive')
-					home_id.classList.toggle('trans')
-					setTimeout(function () {
-						result_id.classList.toggle('trans')
-					}, 200);
-					var result_text_id = document.getElementById("result_text")
-					if (result['is_sarcastic']) {
-						result_text_id.innerText = 'Sarcastic'
-					} else {
-						result_text_id.innerText = 'Not Sarcastic'
+					if(result['status']){
+						alert_id.className = "alert alert-success";
+						alert_id.innerText = result["message"]
+					}else{
+						alert_id.className = "alert alert-danger";
+						alert_id.innerText = result["message"] || result["detail"][0]["msg"]
 					}
 				})
-		}
-		function back() {
-			var home_id = document.getElementById("home")
-			var result_id = document.getElementById("result")
-			result_id.classList.toggle("inactive");
-			result_id.classList.toggle('trans')
-			home_id.classList.toggle('inactive')
-			setTimeout(function () {
-				home_id.classList.toggle('trans')
-			}, 200);
+				.catch(error => {
+					alert_id.className = "alert alert-danger";
+					alert_id.innerText = error["detail"][0]["message"]
+				});
+
+			
+			
 		}
 	</script>
 	<nav class="navbar navbar-expand-lg navbar-light bg-dark">
@@ -104,10 +87,12 @@
 		</div>
 		<br />
 		<div class="jumbotron">
-			<form>
+			<div id="alert"class="alert alert-secondary" role="alert">
+				Please input file
+			</div>
+			<form onsubmit="event.preventDefault();httpGet();">
 				<div class="form-group">
-					<label for="exampleFormControlFile1">Example file input</label>
-					<input type="file" class="form-control-file" id="exampleFormControlFile1">
+					<input id="file" type="file" class="form-control-file">
 				</div>
 				<button class="buttonload btn btn-primary" type="submit">
 					<i class="fa fa-spinner fa-spin inactive" id='spinner'></i>Submit

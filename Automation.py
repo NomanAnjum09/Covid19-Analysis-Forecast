@@ -86,18 +86,23 @@ def clean_dataset(data):
     return data
 @app.post("/train/")
 def train_model(myfile: UploadFile = File(...)):
-    data = myfile.file.read()
-    data=str(data,'utf-8')
-    data = StringIO(data) 
-    data = pd.read_csv(data)    
-    data = clean_dataset(data)
-    Y = data['corona_result']
-    X = data.drop(["corona_result"],axis=1)
-    DT = DecisionTreeClassifier()
-    DT.fit(X,Y)
-    pickle.dump(DT, open(os.path.join(PICKLES_PATH,"DTTrained")+str(datetime.now()), 'wb'))
+    try:
+        data = myfile.file.read()
+        data=str(data,'utf-8')
+        data = StringIO(data) 
+        data = pd.read_csv(data)    
+        data = clean_dataset(data)
+        Y = data['corona_result']
+        X = data.drop(["corona_result"],axis=1)
+        DT = DecisionTreeClassifier()
+        DT.fit(X,Y)
+        out_file = open(os.path.join(PICKLES_PATH, "DTTrained_"+str(datetime.now()).replace(":","-")), "wb")
+        pickle.dump(DT, out_file)
+        out_file.close()
+        return {"status":True,"message":"Model trained successfully"}
+    except:
+        return {"status":False,"message":"Unable to train model"}
     
-    return {"filename": myfile.filename}
-
+    
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8001)
