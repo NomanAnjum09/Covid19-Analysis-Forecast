@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=2.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<link rel="icon" href="https://www.psycharchives.org/retrieve/096175aa-f7f2-4970-989d-d934c30b5551">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+	<script src="https://kit.fontawesome.com/f0a566aef1.js"></script>
+	<link rel="stylesheet" href="style.css">
+	<title>Covid Detector</title>
+</head>
+
+<body>
+	<script>
+		if (document.readyState == 'complete') {
+			start()
+		} else {
+			document.onreadystatechange = function () {
+				if (document.readyState === "complete") {
+					start()
+				}
+			}
+		}
+		function start() {
+			var home_id = document.getElementById("home")
+			home_id.classList.toggle('trans')
+			getModels();
+		}
+		function getModels() {
+			var requestOptions = {
+				method: "GET",
+				redirect: "follow",
+			};
+
+			
+			var model_id = document.getElementById("models")
+			console.log(model_id.childNodes)
+
+			let url = `http://127.0.0.1:8001/models/`;
+
+			fetch(url, requestOptions).then((response) => response.json())
+				.then((result) => {
+					let models = result['models']
+					for(let model in models){
+						let option = document.createElement("option");
+					  	option.text = models[model];
+						model_id.add(option);
+					}
+				})
+		}
+
+		function httpGet() {
+			var requestOptions = {
+				method: "GET",
+				redirect: "follow",
+			};
+
+			var home_id = document.getElementById("home")
+			var result_id = document.getElementById("result")
+			var spinner_id = document.getElementById("spinner")
+			
+			var models = document.getElementById("models")
+			var cough = document.getElementById("cough")
+			var fever = document.getElementById("fever")
+			var sore_throat = document.getElementById("sore_throat")
+			var age_60_and_above= document.getElementById("age_60_and_above")
+			var gender = document.getElementById("gender")
+			var shortness_of_breath = document.getElementById("shortness_of_breath")
+			var head_ache = document.getElementById("headache")
+			spinner_id.classList.toggle("inactive");
+
+
+			let url = `http://127.0.0.1:8001/is_covid/?model=${models.value}&cough=${cough.checked?1:0}&fever=${fever.checked?1:0}&sore_throat=${sore_throat.checked?1:0}&shortness_of_breath=${shortness_of_breath.checked?1:0}&head_ache=${head_ache.checked?1:0}&age_60_and_above=${age_60_and_above.checked?1:0}&gender=${gender.value}`;
+
+			fetch(url, requestOptions).then((response) => response.json())
+				.then((result) => {
+					spinner_id.classList.toggle("inactive");
+					home_id.classList.toggle('inactive')
+					result_id.classList.toggle('inactive')
+					home_id.classList.toggle('trans')
+					setTimeout(function () {
+						result_id.classList.toggle('trans')
+					}, 200);
+					var result_text_id = document.getElementById("result_text")
+					if (result['is_covid']) {
+						result_text_id.innerText = 'Positive'
+					} else {
+						result_text_id.innerText = 'Negative'
+					}
+				})
+		}
+		function back() {
+			var home_id = document.getElementById("home")
+			var result_id = document.getElementById("result")
+			result_id.classList.toggle("inactive");
+			result_id.classList.toggle('trans')
+			home_id.classList.toggle('inactive')
+			setTimeout(function () {
+				home_id.classList.toggle('trans')
+			}, 200);
+		}
+	</script>
+	<nav class="navbar navbar-expand-lg navbar-light bg-dark">
+		<img src='https://www.psycharchives.org/retrieve/096175aa-f7f2-4970-989d-d934c30b5551' width="40" height="40" />
+		<span style="padding:4px"></span>
+		<a class="navbar-brand nav-text" href="index.html">Covid Detector</a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+			aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<div class="collapse navbar-collapse" id="navbarSupportedContent">
+			<ul class="navbar-nav mr-auto">
+				<li class="nav-item active ">
+					<a class="nav-link nav-text" href="index.html">Home</a>
+				</li>
+				<li class="nav-item active ">
+					<a class="nav-link nav-text" href="train.html">Train model</a>
+				</li>
+
+			</ul>
+		</div>
+	</nav>
+	<br />
+	<br />
+	<section id='home' class="container">
+		<div class="jumbotron hero text-center">
+			<h1>Covid Detector</h1>
+		</div>
+		<br />
+		<div class="jumbotron">
+			<form onsubmit="event.preventDefault();httpGet();">
+				<div class="form-group">
+					<label for="form-control">Please select model</label>
+					<select class="form-control" id="models">
+						
+					</select>
+					<br />
+					<label for="form-control">Please input symptoms</label>
+					<table class="table table-dark">
+						<thead>
+							<tr>
+								<th scope="col">Gender</th>
+								<th scope="col">Cough</th>
+								<th scope="col">Fever</th>
+								<th scope="col">Sore Throat</th>
+								<th scope="col">Shortness of Breath</th>
+								<th scope="col">Headache</th>
+								<th scope="col">Age >= 60</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>
+									<select class="form-control" id="gender">
+										<option value="0">Male</option>
+										<option value="1">Female</option>
+									</select>
+								</td>
+								<td>
+									<div class="custom-control custom-switch">
+										<input type="checkbox" class="custom-control-input" id="cough">
+										<label class="custom-control-label" for="cough"></label>
+									</div>
+								</td>
+								<td>
+									<div class="custom-control custom-switch">
+										<input type="checkbox" class="custom-control-input" id="fever">
+										<label class="custom-control-label" for="fever"></label>
+									</div>
+								</td>
+								<td>
+									<div class="custom-control custom-switch">
+										<input type="checkbox" class="custom-control-input" id="sore_throat">
+										<label class="custom-control-label" for="sore_throat"></label>
+									</div>
+								</td>
+								<td>
+									<div class="custom-control custom-switch">
+										<input type="checkbox" class="custom-control-input" id="shortness_of_breath">
+										<label class="custom-control-label" for="shortness_of_breath"></label>
+									</div>
+								</td>
+								<td>
+									<div class="custom-control custom-switch">
+										<input type="checkbox" class="custom-control-input" id="headache">
+										<label class="custom-control-label" for="headache"></label>
+									</div>
+								</td>
+								<td>
+									<div class="custom-control custom-switch">
+										<input type="checkbox" class="custom-control-input" id="age_60_and_above">
+										<label class="custom-control-label" for="age_60_and_above"></label>
+									</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+
+				</div>
+				<button class="buttonload btn btn-primary" type="submit">
+					<i class="fa fa-spinner fa-spin inactive" id='spinner'></i>Submit
+				</button>
+			</form>
+		</div>
+	</section>
+
+	<section id='result' class="container inactive">
+		<div class="text-center">
+			<div class="back-icon" onclick="back()">
+				<i class="fa fa-arrow-left"></i>
+			</div>
+			<div class="jumbotron hero">
+				<h1>Result</h1>
+			</div>
+		</div>
+		<br />
+		<div class="jumbotron">
+			<div class="typewriter">
+				<div class="typewriter-text" id='result_text'></div>
+			</div>
+
+		</div>
+	</section>
+	
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+	integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+	crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+</html>

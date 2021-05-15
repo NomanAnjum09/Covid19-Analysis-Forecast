@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=2.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<link rel="icon" href="https://www.psycharchives.org/retrieve/096175aa-f7f2-4970-989d-d934c30b5551">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+	<script src="https://kit.fontawesome.com/f0a566aef1.js"></script>
+	<link rel="stylesheet" href="style.css">
+	<title>Covid Detector</title>
+</head>
+
+<body>
+	<script>
+
+		function httpGet() {
+			let file = document.getElementById('file').files[0]
+			var myHeaders = new Headers();
+			var formdata = new FormData();
+			formdata.append("myfile", file);
+
+			var requestOptions = {
+				method: 'POST',
+				headers: myHeaders,
+				body: formdata,
+				redirect: 'follow'
+			};
+			var spinner_id = document.getElementById("spinner")
+			spinner_id.classList.toggle("inactive");
+			
+			var alert_id = document.getElementById("alert")
+
+			alert_id.className = "alert alert-info";
+			alert_id.innerText = "Model training started..."
+
+			fetch("http://127.0.0.1:8001/train/", requestOptions)
+				.then(response => response.json())
+				.then(result => {
+					spinner_id.classList.toggle("inactive");
+					if(result['status']){
+						alert_id.className = "alert alert-success";
+						alert_id.innerText = result["message"]
+					}else{
+						alert_id.className = "alert alert-danger";
+						alert_id.innerText = result["message"] || result["detail"][0]["msg"]
+					}
+				})
+				.catch(error => {
+					alert_id.className = "alert alert-danger";
+					alert_id.innerText = error["detail"][0]["message"]
+				});
+
+			
+			
+		}
+	</script>
+	<nav class="navbar navbar-expand-lg navbar-light bg-dark">
+		<img src='https://www.psycharchives.org/retrieve/096175aa-f7f2-4970-989d-d934c30b5551' width="40" height="40" />
+		<span style="padding:4px"></span>
+		<a class="navbar-brand nav-text" href="index.html">Covid Detector</a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+			aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<div class="collapse navbar-collapse" id="navbarSupportedContent">
+			<ul class="navbar-nav mr-auto">
+				<li class="nav-item active ">
+					<a class="nav-link nav-text" href="index.html">Home</a>
+				</li>
+				<li class="nav-item active ">
+					<a class="nav-link nav-text" href="train.html">Train model</a>
+				</li>
+
+			</ul>
+		</div>
+	</nav>
+	<br />
+	<br />
+	<section id="train" class="container">
+		<div class="text-center">
+			<div class="jumbotron hero">
+				<h1>Train Model</h1>
+			</div>
+		</div>
+		<br />
+		<div class="jumbotron">
+			<div id="alert"class="alert alert-secondary" role="alert">
+				Please input file
+			</div>
+			<form onsubmit="event.preventDefault();httpGet();">
+				<div class="form-group">
+					<input id="file" type="file" class="form-control-file">
+				</div>
+				<button class="buttonload btn btn-primary" type="submit">
+					<i class="fa fa-spinner fa-spin inactive" id='spinner'></i>Submit
+				</button>
+			</form>
+		</div>
+	</section>
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+	integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+	crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+</html>
