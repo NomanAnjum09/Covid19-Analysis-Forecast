@@ -3,7 +3,7 @@ import os, re,sys
 import pickle
 import pandas as pd
 
-from datetime import time
+from datetime import datetime
 from io import StringIO
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.preprocessing import LabelEncoder
@@ -87,21 +87,17 @@ def clean_dataset(data):
 @app.post("/train/")
 def train_model(myfile: UploadFile = File(...)):
     data = myfile.file.read()
-    data=str(data,'latin-1')
-
+    data=str(data,'utf-8')
     data = StringIO(data) 
-
     data = pd.read_csv(data)    
-    print(data)
     data = clean_dataset(data)
-    print(data.head())
     Y = data['corona_result']
     X = data.drop(["corona_result"],axis=1)
     DT = DecisionTreeClassifier()
     DT.fit(X,Y)
-    pickle.dump(DT, open("DTTrained"+str(time.now), 'wb'))
+    pickle.dump(DT, open(os.path.join(PICKLES_PATH,"DTTrained")+str(datetime.now()), 'wb'))
     
-    return {"filename": file.filename}
+    return {"filename": myfile.filename}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8001)
