@@ -70,25 +70,22 @@ def models():
 
 def clean_dataset(data):
     
-    data['corona_result'] = data['corona_result'].replace({"שלילי":"N","חיובי":"Positive","אחר":"Other"})
+    data = data.dropna()
+    data = data[data['corona_result']!="אחר"]
+    data['corona_result'] = data['corona_result'].replace({"שלילי":"N","חיובי":"Positive"})
     data['gender'] = data['gender'].replace({"זכר":"Male","נקבה":"Female"})
-    
+
     
     data['corona_result'] = LabelEncoder().fit_transform(data['corona_result'])
     data['age_60_and_above'] = LabelEncoder().fit_transform(data['age_60_and_above'])
     data['gender'] = LabelEncoder().fit_transform(data['gender'])
 
     data = data.drop(['test_indication','test_date'],axis=1) 
-
-    data = data.dropna()
-    
-    data = data[data['corona_result']!=1]
-    data['corona_result'].replace({2:1},inplace=True)
     
     return data
 @app.post("/train/")
-async def train_model(file: UploadFile = File(...)):
-    data = await file.read()
+def train_model(file: UploadFile = File(...)):
+    data = file.read()
 
     data = str(data,'utf-8')
 
@@ -98,11 +95,11 @@ async def train_model(file: UploadFile = File(...)):
     
     data = clean_dataset(data)
     print(data.head())
-    # Y = data['corona_result']
-    # X = data.drop(["corona_result"],axis=1)
-    # DT = DecisionTreeClassifier()
-    # DT.fit(X,Y)
-    # pickle.dump(DT, open("DTTrained"+str(time.now), 'wb'))
+    Y = data['corona_result']
+    X = data.drop(["corona_result"],axis=1)
+    DT = DecisionTreeClassifier()
+    DT.fit(X,Y)
+    pickle.dump(DT, open("DTTrained"+str(time.now), 'wb'))
     
     return {"filename": file.filename}
 
