@@ -3,6 +3,7 @@ import os, re,sys
 import pickle
 import pandas as pd
 
+from datetime import time
 from io import StringIO
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.preprocessing import LabelEncoder
@@ -84,15 +85,14 @@ def clean_dataset(data):
     
     return data
 @app.post("/train/")
-def train_model(file: UploadFile = File(...)):
-    data = file.read()
-
-    data = str(data,'utf-8')
+async def train_model(myfile: UploadFile = File(...)):
+    data = await myfile.file.read()
+    data=str(data,'latin-1')
 
     data = StringIO(data) 
 
     data = pd.read_csv(data)    
-    
+    print(data)
     data = clean_dataset(data)
     print(data.head())
     Y = data['corona_result']

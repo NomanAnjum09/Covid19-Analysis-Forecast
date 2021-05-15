@@ -26,7 +26,7 @@ def clean_dataset(data):
 
 file = open('/home/noman/B-Drive/University-Docs/Semester8/Assignments/DS Assg/Project/Data/corona_tested_individuals_ver_00139.csv','rb')
 data = file.read()
-
+print(data)
 data = str(data,'utf-8')
 
 data = StringIO(data) 
