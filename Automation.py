@@ -85,8 +85,8 @@ def clean_dataset(data):
     
     return data
 @app.post("/train/")
-async def train_model(myfile: UploadFile = File(...)):
-    data = await myfile.file.read()
+def train_model(myfile: UploadFile = File(...)):
+    data = myfile.file.read()
     data=str(data,'latin-1')
 
     data = StringIO(data) 
